@@ -1,0 +1,105 @@
+- name: "Configure OpenVPN server"
+  hosts: openvpn
+  tags:
+    - aws
+  vars:
+    - env: "dev"
+    - region: us-east-1
+    - private_ip: "172.23.8.64"
+    - eip: "34.202.132.109"
+    - cidr: "23"
+    - vpn_password: "{{ lookup('env','VPN_PASSWORD') }}"
+
+  remote_user: ec2-user
+  tasks:
+  - name: Add Google nameserver
+    lineinfile:
+      dest: /etc/resolv.conf
+      line: 'nameserver 8.8.8.8'
+      insertafter: EOF
+    become: yes
+    become_method: sudo
+
+  - name: Download OpenVPN Access Server
+    get_url:
+      url: http://swupdate.openvpn.org/as/openvpn-as-2.1.4-CentOS6.x86_64.rpm
+      dest: /tmp/openvpn.rpm
+
+  - name: Install OpenVPN Access Server
+    shell: yum -y install /tmp/openvpn.rpm
+    become: yes
+    become_method: sudo
+
+  - name: Install google-authenticator
+    package: name=google-authenticator state=installed
+    become: yes
+    become_method: sudo
+
+  - name: Install google-authenticator
+    package: name=google-authenticator state=installed
+    become: yes
+    become_method: sudo
+
+  - name: Setup user 'openvpn'
+    user: name=openvpn password={{ vpn_password }}
+    become: yes
+    become_method: sudo
+
+  - name: Configure OpenVPN Access Server
+    become: yes
+    template:
+      src: files/openvpn/config.json.j2
+      dest: /usr/local/openvpn_as/etc/config.json
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Update OpenVPN database
+    become: yes
+    command: ./confdba --load --file=../etc/config.json
+    args:
+      chdir: /usr/local/openvpn_as/scripts
+
+  - name: Configure PAM
+    copy:
+      src: files/openvpn/openvpnas
+      dest: /etc/pam.d/openvpnas
+      owner: root
+      group: root
+      mode: 0644
+    become: yes
+    become_method: sudo
+
+  - name: Create /etc/openvpn
+    file:
+      path: /etc/openvpn
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+    become: yes
+    become_method: sudo
+
+  - name: Install library
+    copy:
+      src: files/openvpn/openvpn-auth-pam.so
+      dest: /etc/openvpn/openvpn-auth-pam.so
+      owner: root
+      group: root
+      mode: 0644
+    become: yes
+    become_method: sudo
+
+  - name: Modify as.conf for PAM
+    shell: |
+      #!/bin/bash
+      echo "plugin /etc/openvpn/openvpn-auth-pam.so /etc/pam.d/openvpnas" >> /usr/local/openvpn_as/etc/as.conf
+    become: yes
+    become_method: sudo
+
+  - name: Ensure that OpenVPN is started
+    become: yes
+    become_method: sudo
+    service:
+      name: "openvpnas"
+      state: restarted

@@ -1,0 +1,205 @@
+- name: "Create Launch Configuration, ELB, Auto-Scaling group and rolling update of AMI"
+  hosts: localhost
+  any_errors_fatal: true
+  tags:
+    - aws
+  vars:
+    - "build": ""
+    - "env": "dev"
+    - "timestamp": ""
+    - "port": ""
+    - "tag": ""
+    - "aws_account": ""
+    - "scheme": "internet-facing"
+    - "ami_name": "{{ build }}-{{ timestamp }}"
+    - region: us-east-1
+    - desired_instances: 1
+    - app: "{{ env }}-{{ build }}"
+    - lc_name: "{{ env }}-{{ build }}-{{ tag }}-{{ timestamp }}"
+    - new_lc: "{{ lc_name }}"
+    - instances_type: t2.micro
+    - iam_profile: "iam_instance_profile"
+  tasks:
+    - name: Get VPC info with proper environment tag
+      shell: aws ec2 describe-vpcs --filters Name=tag:Env,Values={{ env }}
+      register: vpc_output
+
+    - name: Get JSON from VPC output
+      set_fact:
+        vpc_json: "{{ vpc_output.stdout | from_json }}"
+
+    - name: Get VPC ID
+      set_fact:
+        vpc_id: "{{ vpc_json.Vpcs[0].VpcId }}"
+
+    - name: Get security group for build and environment
+      shell: aws ec2 describe-security-groups --filters Name=vpc-id,Values={{ vpc_id }} Name=tag:Env,Values={{ env }} Name=tag:Build,Values={{ build }}
+      register: security_group
+
+    - name: Get JSON from security group output
+      set_fact:
+        sg_json: "{{ security_group.stdout }}"
+
+    - name: Get ID from security group json
+      set_fact:
+        sg_ids: "{{ sg_json.SecurityGroups|map(attribute='GroupId')|list }}"
+
+    - name: Get private subnets from VPC
+      ec2_vpc_subnet_facts:
+        region: "{{ region }}"
+        filters:
+          vpc-id: "{{ vpc_id }}"
+          "tag:Env": "{{ env }}"
+          "tag:Zone": "private"
+          "tag:Build": "{{ build }}"
+      register: private_subnets
+
+    - name: Get public subnets from VPC
+      ec2_vpc_subnet_facts:
+        region: "{{ region }}"
+        filters:
+          vpc-id: "{{ vpc_id }}"
+          "tag:Env": "{{ env }}"
+          "tag:Zone": "public"
+          "tag:Build": "{{ build }}"
+      register: public_subnets
+
+    - name: Get private subnet IDs from list
+      set_fact:
+        private_subnet_ids: "{{ private_subnets.subnets|map(attribute='id')|list }}"
+
+    - name: Get public subnet IDs from list
+      set_fact:
+        public_subnet_ids: "{{ public_subnets.subnets|map(attribute='id')|list }}"
+
+    - name: Get all the Auto Scaling Groups from awscli
+      shell: aws autoscaling describe-auto-scaling-groups --region {{ region }}
+      register: asg_output
+
+    - name: Get all the instances handled by an Auto Scalling Groups from awscli
+      shell: aws autoscaling describe-auto-scaling-instances --region {{ region }}
+      register: asg_instances_output
+
+    - name: Initialize the current Launch Configration and Auto Scaling Group to Null
+      set_fact:
+        current_lc: null # this necessary for the first update when the ASG doesn't exist
+        current_asg: null
+        running_instances: 0
+
+    - name: Find all the matching Auto Scaling Groups
+      set_fact:
+        asg_list: "{{ (asg_output.stdout
+                        | from_json)['AutoScalingGroups']
+                        | selectattr('AutoScalingGroupName', 'equalto', app)
+                        | list }}"
+
+    - name: Find current Auto Scaling Group and Launch Configuration
+      set_fact:
+        current_asg: "{{ (asg_list | first)['AutoScalingGroupName'] }}"
+        current_lc: "{{ (asg_list | first)['LaunchConfigurationName'] }}"
+      when: asg_list | length > 0
+
+    - name: Check if Launch Configuration needs to be updated
+      set_fact:
+        update_lc: "{{ new_lc != current_lc }}"
+
+    - name: Get Running instances in the Current Auto Scaling Group
+      set_fact:
+        running_instances: "{{ (asg_instances_output.stdout
+                                 | from_json)['AutoScalingInstances']
+                                 | selectattr('AutoScalingGroupName', 'equalto', current_asg)
+                                 | list
+                                 | length }}"
+      when: current_asg and update_lc
+
+    - name: Update desired instances if more instances are currently running
+      set_fact:
+        desired_instances: "{{ running_instances }}"
+      when: running_instances > desired_instances and update_lc
+
+    - name: Describe Launch configuration
+      shell: aws autoscaling describe-auto-scaling-groups --region {{ region }}
+      register: asg_output
+
+    - name: Create or Update Elastic Load Balancer
+      ec2_elb_lb:
+        region: "{{ region }}"
+        name: "{{ app }}"
+        state: present
+        connection_draining_timeout: 120
+        scheme: "{{ scheme }}"
+        security_group_ids: "{{ sg_ids }}"
+        subnets: "{{ public_subnet_ids }}"
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: "{{ port }}"
+            instance_protocol: http
+        health_check:
+          ping_protocol: tcp
+          ping_port: "{{ port }}"
+          response_timeout: 29
+          interval: 30
+          unhealthy_threshold: 8
+          healthy_threshold: 2
+        tags:
+            Environment: "{{ env }}"
+            Name: "{{ env }}-{{ build }}"
+            Tag: "{{ tag }}"
+
+    - name: Find latest AMI
+      ec2_ami_find:
+        region: "{{ region }}"
+        ami_tags:
+          Name: "{{ ami_name }}"
+      register: ami_find
+
+    - name: Define user_data
+      set_fact:
+        lc_user_data: |
+          #!/bin/bash
+          # get image ID for docker
+          export IMAGE_ID=$(sudo docker images -q {{ aws_account }}.dkr.ecr.us-east-1.amazonaws.com)
+          # start docker container
+          sudo docker run -d -p 80:{{ port }} --net=host --restart=always $IMAGE_ID
+
+    - name: Create Launch Configuration
+      ec2_lc:
+        name: "{{ new_lc }}"
+        region: "{{ region }}"
+        image_id: "{{ ami_find.results[0].ami_id }}"
+        key_name: "{{ env }}"
+        security_groups: "{{ sg_ids }}"
+        instance_type: "{{ instances_type }}"
+        instance_profile_name: "{{ iam_profile }}"
+        user_data: "{{ lc_user_data }}"
+      when: update_lc
+
+    - name: Create or Update Auto Scaling Group
+      ec2_asg:
+        name: "{{ app }}"
+        region: "{{ region }}"
+        launch_config_name: "{{ new_lc }}"
+        health_check_period: 600
+        health_check_type: ELB
+        min_size: 1
+        desired_capacity: 1
+        max_size: 4
+        vpc_zone_identifier: "{{ private_subnet_ids }}"
+        load_balancers: "{{ app }}"
+        replace_all_instances: true
+        wait_for_instances: true
+        wait_timeout: 600
+        tags:
+          - Environment: "{{ env }}"
+            Name: "{{ env }}-{{ build }}"
+            Tag: "{{ tag }}"
+            Build: "{{ build }}"
+      when: update_lc
+
+    - name: Delete Old Launch Configuration
+      ec2_lc:
+        name: "{{current_lc}}"
+        state: absent
+        region: "{{ region }}"
+      when: update_lc and current_lc # current_lc is now the old launch config

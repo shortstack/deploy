@@ -1,0 +1,811 @@
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "VPC",
+
+  "Parameters" : {
+
+    "ClusterSize" : {
+      "Description" : "Number of nodes in the cluster",
+      "Type" : "String"
+    },
+    "DiskType" : {
+      "AllowedValues" : [
+        "ephemeral",
+        "ebs"
+      ],
+      "Default" : "ephemeral",
+      "Description" : "Type of Disk to use ( ephemeral/ebs )",
+      "Type" : "String"
+    },
+    "InstanceType" : {
+      "Type": "String",
+      "Description" : "Type of EC2 instance for cluster",
+      "Default": "t2.micro",
+      "AllowedValues" : [
+        "t1.micro",
+        "t2.micro",
+        "t2.small"
+      ],
+      "ConstraintDescription" : "must be valid instance type. "
+    },
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the cluster",
+      "Type" : "String"
+    },
+
+    "VPCCIDR" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the VPC",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.0.0/16",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PrivateSubnetCIDR1" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the private subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.0.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PrivateSubnetCIDR2" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the private subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.1.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PrivateSubnetCIDR3" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the private subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.2.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PrivateSubnetCIDR4" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the private subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.3.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PrivateSubnetCIDR5" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the private subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.4.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PrivateSubnetCIDR6" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the private subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.5.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PublicSubnetCIDR1" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the public subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.6.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PublicSubnetCIDR2" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the public subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.7.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PublicSubnetCIDR3" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the public subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.8.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PublicSubnetCIDR4" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the public subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.9.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PublicSubnetCIDR5" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the public subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.10.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "PublicSubnetCIDR6" : {
+      "Type" : "String",
+      "Description" : "IP Address range for the public subnet",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "172.18.11.0/24",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    }
+  },
+
+  "Resources" : {
+
+    "VPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "EnableDnsSupport" : "true",
+        "EnableDnsHostnames" : "true",
+        "CidrBlock" : { "Ref" : "VPCCIDR" },
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV VPC"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "ENV VPC" },
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Upper", "Value" : "true"}
+        ]
+      }
+    },
+
+    "PrivateSubnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PrivateSubnetCIDR1" },
+        "AvailabilityZone" : "us-east-1a",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Private subnet, Web server"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "web"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "private"},
+          { "Key" : "Network", "Value" : "Private subnet" }
+        ]
+      }
+    },
+
+    "PrivateSubnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PrivateSubnetCIDR2" },
+        "AvailabilityZone" : "us-east-1c",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Private subnet, Web server, 2"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "web"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "private"},
+          { "Key" : "Network", "Value" : "Private subnet" }
+        ]
+      }
+    },
+
+    "PrivateSubnet3" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PrivateSubnetCIDR3" },
+        "AvailabilityZone" : "us-east-1a",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Private subnet, API server"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "api"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "private"},
+          { "Key" : "Network", "Value" : "Private subnet" }
+        ]
+      }
+    },
+
+    "PrivateSubnet4" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PrivateSubnetCIDR4" },
+        "AvailabilityZone" : "us-east-1c",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Private subnet, API server, 2"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "api"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "private"},
+          { "Key" : "Network", "Value" : "Private subnet" }
+        ]
+      }
+    },
+
+    "PrivateSubnet5" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PrivateSubnetCIDR5" },
+        "AvailabilityZone" : "us-east-1a",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Private subnet, Database"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "db"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "private"},
+          { "Key" : "Network", "Value" : "Private subnet" }
+        ]
+      }
+    },
+
+    "PrivateSubnet6" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PrivateSubnetCIDR6" },
+        "AvailabilityZone" : "us-east-1c",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Private subnet, Database, 2"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "db"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "private"},
+          { "Key" : "Network", "Value" : "Private subnet" }
+        ]
+      }
+    },
+
+    "RDSPrivateDatabaseSubnetGroup" : {
+      "Type" : "AWS::RDS::DBSubnetGroup",
+      "Properties" : {
+        "DBSubnetGroupDescription" : "ENV Database Private Subnet Group",
+        "SubnetIds" : [ { "Ref" : "PrivateSubnet5" }, { "Ref" : "PrivateSubnet6" } ],
+        "Tags" : [
+          { "Key" : "Build", "Value" : "db"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "private"}
+        ]
+      }
+    },
+
+    "PublicSubnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PublicSubnetCIDR1" },
+        "AvailabilityZone" : "us-east-1a",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Public subnet, Web load balancer"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "web"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "public"},
+          { "Key" : "Network", "Value" : "Public subnet" }
+        ]
+      }
+    },
+
+    "PublicSubnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PublicSubnetCIDR2" },
+        "AvailabilityZone" : "us-east-1c",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Public subnet, Web load balancer, 2"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "web"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "public"},
+          { "Key" : "Network", "Value" : "Public subnet" }
+        ]
+      }
+    },
+
+    "PublicSubnet3" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PublicSubnetCIDR3" },
+        "AvailabilityZone" : "us-east-1a",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Public subnet, VPN & NAT"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "vpn"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "public"},
+          { "Key" : "Network", "Value" : "Public subnet" }
+        ]
+      }
+    },
+
+    "PublicSubnet4" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PublicSubnetCIDR4" },
+        "AvailabilityZone" : "us-east-1a",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Public subnet, API load balancer"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "api"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "public"},
+          { "Key" : "Network", "Value" : "Public subnet" }
+        ]
+      }
+    },
+
+    "PublicSubnet5" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PublicSubnetCIDR5" },
+        "AvailabilityZone" : "us-east-1c",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Public subnet, API load balancer, 2"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "api"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "public"},
+          { "Key" : "Network", "Value" : "Public subnet" }
+        ]
+      }
+    },
+
+    "PublicSubnet6" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Ref" : "PublicSubnetCIDR6" },
+        "AvailabilityZone" : "us-east-1a",
+        "MapPublicIpOnLaunch" : true,
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ENV Public subnet, Bastion"},
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Build", "Value" : "bastion"},
+          { "Key" : "Env", "Value" : "env"},
+          { "Key" : "Zone", "Value" : "public"},
+          { "Key" : "Network", "Value" : "Public subnet" }
+        ]
+      }
+    },
+
+    "PrivateRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } }
+        ]
+      }
+    },
+
+    "PublicRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } }
+        ]
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation1" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet1" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation2" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet2" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation3" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet3" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation4" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet4" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation5" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet5" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation6" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet6" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation1" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet1" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation2" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet2" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation3" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet3" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation4" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet4" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation5" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet5" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation6" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet6" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "Properties" : {
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Public" }
+        ]
+      }
+    },
+
+    "GatewayToInternet" : {
+      "Type" : "AWS::EC2::VPCGatewayAttachment",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "InternetGatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "NAT" : {
+      "DependsOn" : "GatewayToInternet",
+      "Type" : "AWS::EC2::NatGateway",
+      "Properties" : {
+        "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
+        "SubnetId" : { "Ref" : "PublicSubnet3"}
+      }
+    },
+
+    "EIP" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+
+    "OpenVPNEIP" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "InstanceId" : { "Ref" : "OpenVPNInstance"},
+        "Domain" : "vpc"
+      }
+    },
+
+    "PrivateRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "NatGatewayId" : { "Ref" : "NAT" }
+      }
+    },
+
+    "PublicRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PublicRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "PackerSecurityGroup" : {
+       "Type" : "AWS::EC2::SecurityGroup",
+       "Properties" : {
+          "GroupDescription" : "ENV Packer",
+          "VpcId" : {"Ref" : "VPC"},
+          "SecurityGroupIngress" : [{
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22",
+                "CidrIp" : "0.0.0.0/0"
+            }],
+            "Tags" : [
+              { "Key" : "Build", "Value" : "packer"},
+              { "Key" : "Env", "Value" : "env"}
+            ]
+       }
+     },
+
+
+     "APISecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+           "GroupDescription" : "ENV API",
+           "VpcId" : {"Ref" : "VPC"},
+           "SecurityGroupIngress" : [{
+                 "IpProtocol" : "tcp",
+                 "FromPort" : "80",
+                 "ToPort" : "80",
+                 "CidrIp" : "0.0.0.0/0"
+              },
+              {
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "443",
+                    "ToPort" : "443",
+                    "CidrIp" : "0.0.0.0/0"
+              },
+              {
+                 "IpProtocol" : "tcp",
+                 "FromPort" : "9000",
+                 "ToPort" : "9000",
+                 "CidrIp" : {"Ref" : "VPCCIDR"}
+              },
+              {
+                 "IpProtocol" : "tcp",
+                 "FromPort" : "22",
+                 "ToPort" : "22",
+                 "CidrIp" : {"Ref" : "PublicSubnetCIDR6"}
+             }],
+             "Tags" : [
+               { "Key" : "Build", "Value" : "api"},
+               { "Key" : "Env", "Value" : "env"}
+             ]
+        }
+      },
+
+     "WebSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+           "GroupDescription" : "ENV Web",
+           "VpcId" : {"Ref" : "VPC"},
+           "SecurityGroupIngress" : [{
+                 "IpProtocol" : "tcp",
+                 "FromPort" : "80",
+                 "ToPort" : "80",
+                 "CidrIp" : "0.0.0.0/0"
+              },
+              {
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "443",
+                    "ToPort" : "443",
+                    "CidrIp" : "0.0.0.0/0"
+              },
+              {
+                 "IpProtocol" : "tcp",
+                 "FromPort" : "8080",
+                 "ToPort" : "8080",
+                 "CidrIp" : {"Ref" : "VPCCIDR"}
+              },
+              {
+                 "IpProtocol" : "tcp",
+                 "FromPort" : "22",
+                 "ToPort" : "22",
+                 "CidrIp" : {"Ref" : "PublicSubnetCIDR6"}
+             }],
+             "Tags" : [
+               { "Key" : "Build", "Value" : "web"},
+               { "Key" : "Env", "Value" : "env"}
+             ]
+        }
+      },
+
+       "DatabaseSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+             "GroupDescription" : "ENV Database",
+             "VpcId" : {"Ref" : "VPC"},
+             "SecurityGroupIngress" : [{
+                   "IpProtocol" : "tcp",
+                   "FromPort" : "5432",
+                   "ToPort" : "5432",
+                   "CidrIp" : {"Ref" : "VPCCIDR"}
+             }],
+             "Tags" : [
+               { "Key" : "Build", "Value" : "db"},
+               { "Key" : "Env", "Value" : "env"}
+             ]
+          }
+        },
+
+       "OpenVPNSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+             "GroupDescription" : "ENV OpenVPN",
+             "VpcId" : {"Ref" : "VPC"},
+             "SecurityGroupIngress" : [{
+                   "IpProtocol" : "tcp",
+                   "FromPort" : "943",
+                   "ToPort" : "943",
+                   "CidrIp" : "0.0.0.0/0"
+                },
+                {
+                    "IpProtocol" : "udp",
+                    "FromPort" : "1194",
+                    "ToPort" : "1194",
+                    "CidrIp" : "0.0.0.0/0"
+                 },
+                 {
+                     "IpProtocol" : "tcp",
+                     "FromPort" : "443",
+                     "ToPort" : "443",
+                     "CidrIp" : "0.0.0.0/0"
+                  },
+                  {
+                      "IpProtocol" : "tcp",
+                      "FromPort" : "22",
+                      "ToPort" : "22",
+                      "CidrIp" : "0.0.0.0/0"
+                  }],
+             "Tags" : [
+               { "Key" : "Build", "Value" : "vpn"},
+               { "Key" : "Env", "Value" : "env"}
+             ]
+          }
+        },
+
+        "BastionSecurityGroup" : {
+           "Type" : "AWS::EC2::SecurityGroup",
+           "Properties" : {
+              "GroupDescription" : "ENV Bastion",
+              "VpcId" : {"Ref" : "VPC"},
+              "SecurityGroupIngress" : [
+                   {
+                      "IpProtocol" : "tcp",
+                      "FromPort" : "22",
+                      "ToPort" : "22",
+                      "CidrIp" : { "Ref" : "VPCCIDR" }
+                   }],
+              "Tags" : [
+                { "Key" : "Build", "Value" : "bastion"},
+                { "Key" : "Env", "Value" : "env"}
+              ]
+          }
+       },
+
+       "OpenVPNInstance" : {
+         "Type" : "AWS::EC2::Instance",
+         "Properties" : {
+             "SubnetId" : { "Ref" : "PublicSubnet3" },
+             "KeyName" : "env-key",
+             "SecurityGroupIds" : [ {
+                 "Ref" : "OpenVPNSecurityGroup"
+             } ],
+             "InstanceType" : "t2.small",
+             "AvailabilityZone" : "us-east-1a",
+             "ImageId" : "ami-c58c1dd3",
+             "Tags" : [
+               { "Key" : "Name", "Value" : "env-vpn" },
+               { "Key" : "Env", "Value" : "env" },
+               { "Key" : "Build", "Value" : "vpn" }
+             ]
+         }
+       },
+
+       "BastionInstance" : {
+         "Type" : "AWS::EC2::Instance",
+         "Properties" : {
+             "SubnetId" : { "Ref" : "PublicSubnet6" },
+             "KeyName" : "env-key",
+             "SecurityGroupIds" : [ {
+                 "Ref" : "BastionSecurityGroup"
+             } ],
+             "InstanceType" : "t2.micro",
+             "AvailabilityZone" : "us-east-1a",
+             "ImageId" : "ami-c58c1dd3",
+             "Tags" : [
+               { "Key" : "Name", "Value" : "env-bastion" },
+               { "Key" : "Env", "Value" : "env" },
+               { "Key" : "Build", "Value" : "bastion" }
+             ]
+         }
+       }
+
+  },
+
+  "Outputs" : {
+    "VPCId" : {
+      "Description" : "VPCId of the newly created VPC",
+      "Value" : { "Ref" : "VPC" }
+    },
+    "PackerSecurityGroup" : {
+      "Description" : "Security group ID of the newly created Packer security group",
+      "Value" : { "Ref" : "PackerSecurityGroup" }
+    },
+    "PrivateIP" : {
+      "Description" : "Internal IP address of the newly created OpenVPN server",
+      "Value" : { "Fn::GetAtt" : ["OpenVPNInstance", "PrivateIp"] }
+    },
+    "EIP" : {
+      "Description" : "EIP address of the newly created OpenVPN server",
+      "Value" : { "Ref" : "OpenVPNEIP" }
+    },
+    "BastionPrivateIP" : {
+      "Description" : "Internal IP address of the newly created bastion server",
+      "Value" : { "Fn::GetAtt" : ["BastionInstance", "PrivateIp"] }
+    },
+    "RDSSubnetGroup" : {
+      "Description" : "Name of the Database Subnet Group",
+      "Value" : { "Ref" : "RDSPrivateDatabaseSubnetGroup" }
+    }
+  }
+}

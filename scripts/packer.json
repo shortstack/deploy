@@ -1,0 +1,54 @@
+{
+	"variables": {
+		"aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+		"aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+		"env": "",
+		"build": "",
+    "timestamp": "",
+    "tag": "",
+		"aws_account": "{{env `AWS_ACCOUNT`}}"
+	},
+	"builders": [
+		{
+			"type": "amazon-ebs",
+			"access_key": "{{user `aws_access_key`}}",
+			"secret_key": "{{user `aws_secret_key`}}",
+			"region": "us-east-1",
+			"source_ami": "ami-c58c1dd3",
+			"security_group_id": "sg-888652f6",
+			"instance_type": "t2.micro",
+			"ssh_username": "ec2-user",
+      "ssh_private_key_file": "./scripts/{{user `env`}}-key.pem",
+      "ssh_keypair_name": "{{user `env`}}-key",
+			"ami_name": "{{user `build`}}-{{user `timestamp`}}",
+			"iam_instance_profile": "iam_instance_profile",
+			"run_tags": {
+				"Name": "{{user `env`}}-{{user `build`}}-{{user `timestamp`}}"
+			},
+			"run_volume_tags": {
+				"Name": "{{user `env`}}-{{user `build`}}-{{user `timestamp`}}"
+			},
+			"tags": {
+				"Name": "{{user `build`}}-{{user `timestamp`}}",
+				"Build": "{{user `build`}}",
+				"API": "{{user `tag`}}"
+			}
+		}
+	],
+	"provisioners": [
+		{
+			"type": "shell",
+			"inline": [
+				"sudo yum -y install docker",
+        "sudo systemctl enable docker.service",
+        "sudo systemctl start docker.service",
+				"sudo usermod -a -G docker ec2-user",
+        "aws configure set aws_access_key_id {{user `aws_access_key`}}",
+        "aws configure set aws_secret_access_key {{user `aws_secret_key`}}",
+        "aws configure set region us-east-1",
+        "eval sudo \"$(aws ecr get-login --region us-east-1)\"",
+        "sudo docker pull {{user `aws_account`}}.dkr.ecr.us-east-1.amazonaws.com/{{user `build`}}:{{user `tag`}}"
+			]
+		}
+	]
+}

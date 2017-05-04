@@ -1,0 +1,86 @@
+- name: "Provision CloudFormation stack to create VPC and Database"
+  hosts: localhost
+  tags:
+    - aws
+  vars:
+    - env: "dev"
+    - region: us-east-1
+
+  # Launch the json template. Register the output.
+
+  tasks:
+  - name: Launch CloudFormation stack
+    cloudformation: >
+      stack_name="{{ env }}-vpc" state=present
+      region=us-east-1 disable_rollback=false
+      template=./{{ env }}-vpc.json
+    args:
+      template_parameters:
+        KeyName: "{{ env }}-key"
+        DiskType: ephemeral
+        InstanceType: t2.micro
+        ClusterSize: 3
+    register: stack
+
+  - name: Show outputs
+    debug: msg="CloudFormation output {{stack.stack_outputs}}"
+
+  - name: Save outputs to variable
+    set_fact:
+      json: "{{ stack.stack_outputs }}"
+
+  - name: Get VPC info with proper environment tag
+    shell: aws ec2 describe-vpcs --filters Name=tag:Env,Values={{ env }}
+    register: vpc_output
+
+  - name: Get JSON from VPC output
+    set_fact:
+      vpc_json: "{{ vpc_output.stdout | from_json }}"
+
+  - name: Get VPC ID
+    set_fact:
+      vpc_id: "{{ vpc_json.Vpcs[0].VpcId }}"
+
+  - name: Get EIP of OpenVPN instance from JSON
+    set_fact:
+      eip_address: "{{ json.EIP }}"
+
+  - name: Get private IP of OpenVPN instance from JSON
+    set_fact:
+      ip_address: "{{ json.PrivateIP }}"
+
+  - name: Get Packer security group ID from JSON
+    set_fact:
+      packer_sg_id: "{{ json.PackerSecurityGroup }}"
+
+  - name: Set EIP in OpenVPN playbook
+    lineinfile:
+      dest: "./playbook-openvpn.yml"
+      state: present
+      regexp: '^(.*)eip:(.*)$'
+      line: '    - eip: "{{ eip_address }}"'
+      backrefs: yes
+      backup: no
+
+  - name: Set private IP in OpenVPN playbook
+    lineinfile:
+      dest: "./playbook-openvpn.yml"
+      state: present
+      regexp: '^(.*)private_ip:(.*)$'
+      line: '    - private_ip: "{{ ip_address }}"'
+      backrefs: yes
+      backup: no
+
+  - name: Update Ansible hosts file with OpenVPN IP and SSH key
+    shell: echo [openvpn] > ./hosts; echo {{ eip_address }} >> ./hosts; echo " " >> ./hosts; echo [openvpn:vars] >> ./hosts; sudo echo ansible_ssh_private_key_file=./scripts/{{ env }}-key.pem >> ./hosts;
+    become: yes
+    become_method: sudo
+
+  - name: Update Packer security group ID
+    lineinfile:
+      dest: "./packer.json"
+      state: present
+      regexp: '^(.*)"security_group_id":(.*)$'
+      line: '			"security_group_id": "{{ packer_sg_id }}",'
+      backrefs: yes
+      backup: no
