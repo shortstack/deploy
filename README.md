@@ -46,7 +46,7 @@ OpenVPN playbook runs, which installs and configures OpenVPN, sets the password 
 
 Script requires 2 parameters:
 * Environment - test, pre, prod
-* CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19. See deployment dashboard to see which ones are in use.
+* CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19. 
 
 ```bash
 cd deploy
