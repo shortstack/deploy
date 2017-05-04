@@ -7,7 +7,6 @@
 Install dependencies:
 
 ```bash
-brew install postgresql
 sudo pip install --upgrade pip
 sudo pip install boto3 passlib
 sudo pip install jinja2 --upgrade
@@ -17,7 +16,7 @@ sudo pip install ansible --upgrade
 Configure AWS CLI tools:
 
 ```bash
-aws configure
+sudo pip install awscli
 ```
 ---
 
@@ -47,12 +46,29 @@ OpenVPN playbook runs, which installs and configures OpenVPN, sets the password 
 
 Script requires 2 parameters:
 * Environment - test, pre, prod
-* CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19. See deployment dashboard to see which ones are in use.
+* CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19. 
 
 ```bash
 cd deploy
 ./scripts/deploy-vpc.sh -e dev -c 19
 ```
+
+#### When the OpenVPN playbook completes, do the following to add an admin user to OpenVPN:
+
+```bash
+ssh -i key.pem ec2-user@{ openvpn-ip }
+sudo -i
+useradd { username }
+passwd { username }
+/usr/local/openvpn_as/scripts/sacli --user { username } --key prop_superuser --value true UserPropPut
+su - { username }
+google-authenticator
+```
+
+You can now log into the VPN at https://{ openvpn-ip }:943
+
+You will now also want to lock down the OpenVPN security group to only allow SSH from your location.
+
 
 ## deploy.sh
 
