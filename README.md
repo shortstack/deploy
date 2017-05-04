@@ -7,7 +7,6 @@
 Install dependencies:
 
 ```bash
-brew install postgresql
 sudo pip install --upgrade pip
 sudo pip install boto3 passlib
 sudo pip install jinja2 --upgrade
@@ -17,7 +16,7 @@ sudo pip install ansible --upgrade
 Configure AWS CLI tools:
 
 ```bash
-aws configure
+sudo pip install awscli
 ```
 ---
 
