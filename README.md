@@ -40,13 +40,13 @@ This script uses Ansible to deploy an AWS CloudFormation template. It builds a C
 
 These are all tagged appropriately such that the API/web deploy script will pick up the tags associated with the newly created VPC components, and we will be able to automatically create a new environment and deploy the web and API builds to it.
 
-OpenVPN playbook runs, which installs and configures OpenVPN, sets the password for the openvpn administrator user, and allows access to the subnets that were generated within the VPC.
+OpenVPN playbook runs, which installs and configures OpenVPN with 2 factor authentication enabled, sets the password for the openvpn administrator user, and allows access to the subnets that were generated within the VPC. You will need to SSH in and set up an admin user when this is complete.
 
 ### Usage
 
 Script requires 2 parameters:
 * Environment - test, pre, prod
-* CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19. 
+* CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19.
 
 ```bash
 cd deploy
@@ -68,7 +68,6 @@ google-authenticator
 You can now log into the VPN at https://{ openvpn-ip }:943
 
 You will now also want to lock down the OpenVPN security group to only allow SSH from your location.
-
 
 ## deploy.sh
 
@@ -104,6 +103,6 @@ Script requires 4 parameters:
 * Tag - GitHub commit tag
 
 ```bash
-cd deploy
+cd sg-deploy
 ./scripts/deploy.sh -e dev -b web -l local -t b5ee94d6dce18602691c961e5d0bad0d18ac73d5
 ```
