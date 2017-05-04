@@ -45,7 +45,7 @@ OpenVPN playbook runs, which installs and configures OpenVPN with 2 factor authe
 ### Usage
 
 Script requires 2 parameters:
-* Environment - test, pre, prod
+* Environment - dev, test, prod
 * CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19.
 
 ```bash
@@ -103,6 +103,6 @@ Script requires 4 parameters:
 * Tag - GitHub commit tag
 
 ```bash
-cd sg-deploy
+cd deploy
 ./scripts/deploy.sh -e dev -b web -l local -t b5ee94d6dce18602691c961e5d0bad0d18ac73d5
 ```
