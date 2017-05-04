@@ -43,6 +43,20 @@ These are all tagged appropriately such that the API/web deploy script will pick
 
 OpenVPN playbook runs, which installs and configures OpenVPN, sets the password for the openvpn administrator user, and allows access to the subnets that were generated within the VPC.
 
+#### When the OpenVPN playbook completes, do the following to add an admin user to OpenVPN:
+
+ssh -i key.pem ec2-user@{ openvpn-ip }
+sudo -i
+useradd { username }
+passwd { username }
+/usr/local/openvpn_as/scripts/sacli --user { username } --key prop_superuser --value true UserPropPut
+su - { username }
+google-authenticator
+
+You can now log into the VPN at https://{ openvpn-ip }:943
+
+You will now also want to lock down the OpenVPN security group to only allow SSH from your location.
+
 ### Usage
 
 Script requires 2 parameters:
