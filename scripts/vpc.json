@@ -578,6 +578,22 @@
       }
     },
 
+    "WebECR" : {
+       "Type" : "AWS::ECR::Repository",
+       "Properties" : {
+         "RepositoryName" : "web",
+         "RepositoryPolicyText" : ""
+       }
+     },
+
+     "APIECR" : {
+        "Type" : "AWS::ECR::Repository",
+        "Properties" : {
+          "RepositoryName" : "api",
+          "RepositoryPolicyText" : ""
+        }
+      },
+
     "PackerSecurityGroup" : {
        "Type" : "AWS::EC2::SecurityGroup",
        "Properties" : {
@@ -595,7 +611,6 @@
             ]
        }
      },
-
 
      "APISecurityGroup" : {
         "Type" : "AWS::EC2::SecurityGroup",

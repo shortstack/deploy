@@ -44,12 +44,15 @@ OpenVPN playbook runs, which installs and configures OpenVPN with 2 factor authe
 
 ### Usage
 
+Modify env-dev-deploy.template file with your own information.
+
 Script requires 2 parameters:
 * Environment - dev, test, prod
 * CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19.
 
 ```bash
 cd deploy
+cp env/env-dev-deploy.template env/env-dev-deploy.list
 ./scripts/deploy-vpc.sh -e dev -c 19
 ```
 
@@ -67,7 +70,7 @@ google-authenticator
 
 You can now log into the VPN at https://{ openvpn-ip }:943
 
-You will now also want to lock down the OpenVPN security group to only allow SSH from your location.
+You will now also want to lock down the OpenVPN security group to allow SSH from only your location, instead of 0.0.0.0/0.
 
 ## deploy.sh
 
@@ -79,9 +82,24 @@ Configure AWS CLI tools:
 sudo pip install awscli
 ```
 
+Modify Dockerfile and build Docker images or add your own. Then push to ECS repositories.
+```
+eval sudo $(aws ecr get-login --region us-east-1)
+
+cd build/api
+docker build -t api .
+docker tag api:latest { aws_account }.dkr.ecr.us-east-1.amazonaws.com/api:latest
+docker push { aws_account }.dkr.ecr.us-east-1.amazonaws.com/api:latest
+
+cd ../web
+docker build -t web .
+docker tag web:latest { aws_account }.dkr.ecr.us-east-1.amazonaws.com/web:latest
+docker push { aws_account }.dkr.ecr.us-east-1.amazonaws.com/web:latest
+```
+
 ---
 
-This script uses Packer to create an AMI based on Amazon Linux with Docker. A new instance spins up and pulls the latest Docker image from the ECS repository. The instance is then shut down, and the new AMI is created.
+This script uses Packer to create an AMI based on Amazon Linux with Docker. A new instance spins up and pulls the latest Docker image from your ECS repository. The instance is then shut down, and the new AMI is created.
 
 Once the AMI has been created, an Ansible playbook runs.
 * Finds the proper VPC, subnet, security group, and auto scaling group
