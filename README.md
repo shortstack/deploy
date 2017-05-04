@@ -50,7 +50,7 @@ Script requires 2 parameters:
 * CIDR - 18, 19, 20, etc. Ex: If you want a 172.19 VPC, enter 19. See deployment dashboard to see which ones are in use.
 
 ```bash
-cd sg-deploy
+cd deploy
 ./scripts/deploy-vpc.sh -e dev -c 19
 ```
 
@@ -88,6 +88,6 @@ Script requires 4 parameters:
 * Tag - GitHub commit tag
 
 ```bash
-cd sg-deploy
+cd deploy
 ./scripts/deploy.sh -e dev -b web -l local -t b5ee94d6dce18602691c961e5d0bad0d18ac73d5
 ```
