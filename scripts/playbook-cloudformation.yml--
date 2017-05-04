@@ -48,10 +48,14 @@
   - name: Get private IP of OpenVPN instance from JSON
     set_fact:
       ip_address: "{{ json.PrivateIP }}"
-      
+
   - name: Get Packer security group ID from JSON
     set_fact:
       packer_sg_id: "{{ json.PackerSecurityGroup }}"
+
+  - name: Get Packer subnet ID from JSON
+    set_fact:
+      packer_subnet_id: "{{ json.PackerSubnetId }}"
 
   - name: Set EIP in OpenVPN playbook
     lineinfile:
@@ -76,11 +80,20 @@
     become: yes
     become_method: sudo
 
+  - name: Update Packer subnet
+    lineinfile:
+      dest: "./packer.json"
+      state: present
+      regexp: '^(.*)"subnet_id":(.*)$'
+      line: '			"subnet_id": "{{ packer_subnet_id }}",'
+      backrefs: yes
+      backup: no
+
   - name: Update Packer security group ID
     lineinfile:
       dest: "./packer.json"
       state: present
       regexp: '^(.*)"security_group_id":(.*)$'
-      line: '			"security_group_id": "{{ packer_sg_id }}"'
+      line: '			"security_group_id": "{{ packer_sg_id }}",'
       backrefs: yes
       backup: no

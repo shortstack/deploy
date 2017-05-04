@@ -99,10 +99,10 @@ Once the AMI has been created, an Ansible playbook runs.
 Script requires 4 parameters:
 * Environment - dev, test, prod
 * Build - web, api
-* Location - local, circleci
+* Location - linux, mac
 * Tag - GitHub commit tag
 
 ```bash
 cd deploy
-./scripts/deploy.sh -e dev -b web -l local -t b5ee94d6dce18602691c961e5d0bad0d18ac73d5
+./scripts/deploy.sh -e dev -b web -l mac -t b5ee94d6dce18602691c961e5d0bad0d18ac73d5
 ```

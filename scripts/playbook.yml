@@ -4,12 +4,12 @@
   tags:
     - aws
   vars:
-    - "build": ""
+    - "build": "web"
     - "env": "dev"
-    - "timestamp": ""
-    - "port": ""
-    - "tag": ""
-    - "aws_account": ""
+    - "timestamp": "1493906644"
+    - "port": "8080"
+    - "tag": "latest"
+    - "aws_account": "762130055263"
     - "scheme": "internet-facing"
     - "ami_name": "{{ build }}-{{ timestamp }}"
     - region: us-east-1
@@ -158,17 +158,20 @@
       set_fact:
         lc_user_data: |
           #!/bin/bash
+          # install ssm agent
+          sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+          sudo start amazon-ssm-agent
           # get image ID for docker
-          export IMAGE_ID=$(sudo docker images -q {{ aws_account }}.dkr.ecr.us-east-1.amazonaws.com)
+          export IMAGE_ID=$(sudo docker images -q {{ aws_account }}.dkr.ecr.us-east-1.amazonaws.com/{{ build }})
           # start docker container
-          sudo docker run -d -p 80:{{ port }} --net=host --restart=always $IMAGE_ID
+          sudo docker run -d --net=host --restart=always $IMAGE_ID
 
     - name: Create Launch Configuration
       ec2_lc:
         name: "{{ new_lc }}"
         region: "{{ region }}"
         image_id: "{{ ami_find.results[0].ami_id }}"
-        key_name: "{{ env }}"
+        key_name: "{{ env }}-key"
         security_groups: "{{ sg_ids }}"
         instance_type: "{{ instances_type }}"
         instance_profile_name: "{{ iam_profile }}"
@@ -181,7 +184,7 @@
         region: "{{ region }}"
         launch_config_name: "{{ new_lc }}"
         health_check_period: 600
-        health_check_type: ELB
+        health_check_type: EC2
         min_size: 1
         desired_capacity: 1
         max_size: 4

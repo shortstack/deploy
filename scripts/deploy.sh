@@ -98,7 +98,7 @@ PACKER="./scripts/packer.json"
 sed -i -- "5s/.*/		\"env\": \"$ENV\",/g" $PACKER
 sed -i -- "6s/.*/		\"build\": \"$BUILD\",/g" $PACKER
 sed -i -- "7s/.*/    \"timestamp\": \"$DATE\",/g" $PACKER
-sed -i -- "8s/.*/    \"tag\": \"$TAG\"/g" $PACKER
+sed -i -- "8s/.*/    \"tag\": \"$TAG\",/g" $PACKER
 
 if [ $BUILD = "api" ]; then
   sed -i -- "35s/.*/				\"API\": \"{{user \`tag\`}}\"/g" $PACKER
@@ -134,4 +134,3 @@ fi
 
 # Remove files
 rm $KEY
-rm ./env-$ENV-deploy.list

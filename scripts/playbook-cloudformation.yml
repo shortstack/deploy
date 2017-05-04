@@ -53,6 +53,10 @@
     set_fact:
       packer_sg_id: "{{ json.PackerSecurityGroup }}"
 
+  - name: Get Packer subnet ID from JSON
+    set_fact:
+      packer_subnet_id: "{{ json.PackerSubnetId }}"
+
   - name: Set EIP in OpenVPN playbook
     lineinfile:
       dest: "./playbook-openvpn.yml"
@@ -75,6 +79,15 @@
     shell: echo [openvpn] > ./hosts; echo {{ eip_address }} >> ./hosts; echo " " >> ./hosts; echo [openvpn:vars] >> ./hosts; sudo echo ansible_ssh_private_key_file=./scripts/{{ env }}-key.pem >> ./hosts;
     become: yes
     become_method: sudo
+
+  - name: Update Packer subnet
+    lineinfile:
+      dest: "./packer.json"
+      state: present
+      regexp: '^(.*)"subnet_id":(.*)$'
+      line: '			"subnet_id": "{{ packer_subnet_id }}",'
+      backrefs: yes
+      backup: no
 
   - name: Update Packer security group ID
     lineinfile:

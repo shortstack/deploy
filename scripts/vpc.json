@@ -791,6 +791,10 @@
       "Description" : "Security group ID of the newly created Packer security group",
       "Value" : { "Ref" : "PackerSecurityGroup" }
     },
+    "PackerSubnetId" : {
+      "Description" : "Packer subnet ID",
+      "Value" : { "Ref" : "PublicSubnet6" }
+    },
     "PrivateIP" : {
       "Description" : "Internal IP address of the newly created OpenVPN server",
       "Value" : { "Fn::GetAtt" : ["OpenVPNInstance", "PrivateIp"] }

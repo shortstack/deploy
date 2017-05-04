@@ -5,12 +5,12 @@
   vars:
     - env: "dev"
     - region: us-east-1
-    - private_ip: "172.23.8.78"
-    - eip: "52.7.116.199"
+    - private_ip: "172.23.8.140"
+    - eip: "52.44.202.213"
     - cidr: "23"
     - vpn_password: "{{ lookup('env','VPN_PASSWORD') }}"
 
-  remote_user: centos
+  remote_user: ec2-user
   tasks:
   - name: Add Google nameserver
     lineinfile:
@@ -22,7 +22,7 @@
 
   - name: Download OpenVPN Access Server
     get_url:
-      url: http://swupdate.openvpn.net/as/openvpn-as-2.1.4-CentOS7.x86_64.rpm
+      url: http://swupdate.openvpn.org/as/openvpn-as-2.1.4-CentOS6.x86_64.rpm
       dest: /tmp/openvpn.rpm
 
   - name: Install OpenVPN Access Server
@@ -37,11 +37,6 @@
 
   - name: Setup user 'openvpn'
     user: name=openvpn password={{ vpn_password }}
-    become: yes
-    become_method: sudo
-
-  - name: Change SELinux config to allow VPN tunnel
-    shell: setsebool -P httpd_can_network_connect 1
     become: yes
     become_method: sudo
 

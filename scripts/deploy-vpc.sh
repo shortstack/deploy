@@ -75,6 +75,8 @@ echo ""
 echo "************************************ CONFIGURING OPENVPN ************************************"
 echo ""
 
+sleep 60
+
 # Install and configure OpenVPN
 ansible-playbook ./scripts/playbook-openvpn.yml
 
@@ -85,6 +87,5 @@ fi
 
 # Delete files
 rm ./scripts/$ENV-vpc.json*
-rm ./env-$ENV-deploy.list
 yes | rm ./scripts/hosts
 rm $KEY

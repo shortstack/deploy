@@ -5,8 +5,8 @@
   vars:
     - env: "dev"
     - region: us-east-1
-    - private_ip: "172.23.8.64"
-    - eip: "34.202.132.109"
+    - private_ip: "172.23.8.101"
+    - eip: "52.54.171.72"
     - cidr: "23"
     - vpn_password: "{{ lookup('env','VPN_PASSWORD') }}"
 

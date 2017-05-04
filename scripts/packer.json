@@ -2,10 +2,10 @@
 	"variables": {
 		"aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
 		"aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
-		"env": "",
-		"build": "",
-    "timestamp": "",
-    "tag": "",
+		"env": "dev",
+		"build": "web",
+    "timestamp": "1493906644",
+    "tag": "latest",
 		"aws_account": "{{env `AWS_ACCOUNT`}}"
 	},
 	"builders": [
@@ -15,7 +15,8 @@
 			"secret_key": "{{user `aws_secret_key`}}",
 			"region": "us-east-1",
 			"source_ami": "ami-c58c1dd3",
-			"security_group_id": "sg-888652f6",
+			"security_group_id": "sg-8764b5f9",
+			"subnet_id": "subnet-a586a6c0",
 			"instance_type": "t2.micro",
 			"ssh_username": "ec2-user",
       "ssh_private_key_file": "./scripts/{{user `env`}}-key.pem",
@@ -31,7 +32,7 @@
 			"tags": {
 				"Name": "{{user `build`}}-{{user `timestamp`}}",
 				"Build": "{{user `build`}}",
-				"API": "{{user `tag`}}"
+				"Web": "{{user `tag`}}"
 			}
 		}
 	],
@@ -40,8 +41,8 @@
 			"type": "shell",
 			"inline": [
 				"sudo yum -y install docker",
-        "sudo systemctl enable docker.service",
-        "sudo systemctl start docker.service",
+        "sudo chkconfig docker on",
+        "sudo service docker start",
 				"sudo usermod -a -G docker ec2-user",
         "aws configure set aws_access_key_id {{user `aws_access_key`}}",
         "aws configure set aws_secret_access_key {{user `aws_secret_key`}}",
