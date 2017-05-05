@@ -97,3 +97,29 @@
       line: '			"security_group_id": "{{ packer_sg_id }}",'
       backrefs: yes
       backup: no
+
+  - name: Get Database security group ID from JSON
+    set_fact:
+      db_sg_id: "{{ json.RDSSecurityGroup }}"
+
+  - name: Get Database subnet group from JSON
+    set_fact:
+      db_subnet: "{{ json.RDSSubnetGroup }}"
+
+  - name: Set database subnet in database playbook
+    lineinfile:
+      dest: "./playbook-database.yml"
+      state: present
+      regexp: '^(.*)subnet:(.*)$'
+      line: '      subnet: "{{ db_subnet }}"'
+      backrefs: yes
+      backup: no
+
+  - name: Set database security groups in database playbook
+    lineinfile:
+      dest: "./playbook-database.yml"
+      state: present
+      regexp: '^(.*)vpc_security_groups:(.*)$'
+      line: '      vpc_security_groups: "{{ db_sg_id }}"'
+      backrefs: yes
+      backup: no

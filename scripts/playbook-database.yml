@@ -1,0 +1,28 @@
+- name: "Deploy database"
+  hosts: localhost
+  tags:
+    - aws
+  vars:
+    - env: "dev"
+    - region: us-east-1
+    - size: "{{ lookup('env','DB_SIZE') }}"
+    - password: "{{ lookup('env','DB_PASSWORD') }}"
+
+  tasks:
+  - name: Create Postgres RDS in a VPC
+    local_action:
+      module: rds
+      command: create
+      instance_name: "{{ env }}"
+      region: "{{ region }}"
+      size: "{{ size }}"
+      instance_type: "db.t2.micro"
+      db_engine: "postgres"
+      subnet: "dev-vpc-rdsprivatedatabasesubnetgroup-tkwd2krcxi1i"
+      multi_zone: "no"
+      port: 5432
+      db_name: "{{ env }}"
+      username: "dbadmin"
+      password: "{{ password }}"
+      vpc_security_groups: "sg-ebfb5c95"
+    register: database_facts

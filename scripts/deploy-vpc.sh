@@ -48,6 +48,7 @@ chmod 600 $KEY
 sed -i -- "6s/.*/    - env: \"$ENV\"/g" "./scripts/playbook-cloudformation.yml"
 sed -i -- "6s/.*/    - env: \"$ENV\"/g" "./scripts/playbook-openvpn.yml"
 sed -i -- "10s/.*/    - cidr: \"$CIDR\"/g" "./scripts/playbook-openvpn.yml"
+sed -i -- "6s/.*/    - env: \"$ENV\"/g" "./scripts/playbook-database.yml"
 
 # Copy Cloudformation JSON and add environment and CIDR
 cp ./scripts/vpc.json ./scripts/$ENV-vpc.json
@@ -75,13 +76,25 @@ echo ""
 echo "************************************ CONFIGURING OPENVPN ************************************"
 echo ""
 
-sleep 60
+sleep 30
 
 # Install and configure OpenVPN
 ansible-playbook ./scripts/playbook-openvpn.yml
 
 if [ "$?" -ne "0" ]; then
   echo "OpenVPN playbook failed."
+  exit 1
+fi
+
+echo ""
+echo "************************************ DEPLOYING DATABASE ************************************"
+echo ""
+
+# Deploy database
+ansible-playbook ./scripts/playbook-database.yml
+
+if [ "$?" -ne "0" ]; then
+  echo "Database playbook failed."
   exit 1
 fi
 

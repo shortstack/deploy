@@ -834,6 +834,10 @@
     "RDSSubnetGroup" : {
       "Description" : "Name of the Database Subnet Group",
       "Value" : { "Ref" : "RDSPrivateDatabaseSubnetGroup" }
+    },
+    "RDSSecurityGroup" : {
+      "Description" : "Database Security Group ID",
+      "Value" : { "Ref" : "DatabaseSecurityGroup" }
     }
   }
 }
