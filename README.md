@@ -99,7 +99,8 @@ aws ecr create-repository --repository-name api
 aws ecr create-repository --repository-name web
 ```
 
-Modify Dockerfiles and build Docker images or add your own. Then push to newly created ECS repositories.
+Modify Dockerfiles and build Docker images or add your own. Then push to newly created ECS repositories. The script assumes the web server runs on port 8080, and the API server runs on port 9000. You can change these to fit your applications.
+
 ```
 eval sudo $(aws ecr get-login --region us-east-1)
 
