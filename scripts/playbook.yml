@@ -1,4 +1,4 @@
-- name: "Create Launch Configuration, ELB, Auto-Scaling group and rolling update of AMI"
+- name: "Deploy launch config, load balancer, and auto scaling group with new AMI/Docker build"
   hosts: localhost
   any_errors_fatal: true
   tags:
@@ -82,7 +82,7 @@
 
     - name: Initialize the current Launch Configration and Auto Scaling Group to Null
       set_fact:
-        current_lc: null # this necessary for the first update when the ASG doesn't exist
+        current_lc: null
         current_asg: null
         running_instances: 0
 
@@ -205,4 +205,4 @@
         name: "{{current_lc}}"
         state: absent
         region: "{{ region }}"
-      when: update_lc and current_lc # current_lc is now the old launch config
+      when: update_lc and current_lc 

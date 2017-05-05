@@ -122,8 +122,9 @@ This script uses Packer to create an AMI based on Amazon Linux with Docker. A ne
 Once the AMI has been created, an Ansible playbook runs.
 * Finds the proper VPC, subnet, security group, and auto scaling group
 * Generates a user-data script
+ * Installs AWS SSM agent so instances are managed in EC2
  * Gets correct Docker image ID
- * Creates the correct Docker run command with image ID and environment variables
+ * Runs the Docker image
 * Creates a new launch configuration with the AMI and user-data script
 * Updates (or creates) the auto scaling group to use the launch configuration
 * Updates (or creates) the load balancer
