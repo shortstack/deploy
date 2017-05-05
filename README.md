@@ -136,6 +136,10 @@ Once the AMI has been created, an Ansible playbook runs.
 * Adds the appropriate amount of new instances to the load balancer via the auto scaling group
 * Shuts down old instances once new instances are healthy
 
+Your web application will be available via the web load balancer URL. 
+
+Your API will be available via the API load balancer URL assuming you deployed a database and an actual API.
+
 ### Usage
 
 Script requires 4 parameters:
