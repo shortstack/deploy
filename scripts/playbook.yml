@@ -10,6 +10,7 @@
     - "port": "8080"
     - "tag": "latest"
     - "aws_account": "762130055263"
+    - "api_url": ""
     - "scheme": "internet-facing"
     - "ami_name": "{{ build }}-{{ timestamp }}"
     - region: us-east-1
@@ -161,10 +162,30 @@
           # install ssm agent
           sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
           sudo start amazon-ssm-agent
+          # build docker image with updated nginx.conf
+          mkdir ./build
+          cd ./build
+          echo "FROM {{ aws_account }}.dkr.ecr.us-east-1.amazonaws.com/{{ build }}:{{ tag }}" > Dockerfile
+          echo 'RUN sed -i -- "s/api_url/{{ api_url }}/g" "/etc/nginx/nginx.conf"' >> Dockerfile
+          sudo docker build -t {{ build }}-nginx .
           # get image ID for docker
-          export IMAGE_ID=$(sudo docker images -q {{ aws_account }}.dkr.ecr.us-east-1.amazonaws.com/{{ build }})
+          export IMAGE_ID=$(sudo docker images -q {{ build }}-nginx)
           # start docker container
           sudo docker run -d --net=host --restart=always $IMAGE_ID
+      when: build == "web"
+
+    - name: Define user_data
+      set_fact:
+        lc_user_data: |
+          #!/bin/bash
+          # install ssm agent
+          sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+          sudo start amazon-ssm-agent
+          # get image ID for docker
+          export IMAGE_ID=$(sudo docker images -q {{ aws_account }}.dkr.ecr.us-east-1.amazonaws.com/api)
+          # start docker container
+          sudo docker run -d --net=host --restart=always $IMAGE_ID
+      when: build == "api"
 
     - name: Create Launch Configuration
       ec2_lc:
@@ -205,4 +226,4 @@
         name: "{{current_lc}}"
         state: absent
         region: "{{ region }}"
-      when: update_lc and current_lc 
+      when: update_lc and current_lc

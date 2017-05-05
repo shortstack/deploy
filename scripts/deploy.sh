@@ -102,6 +102,9 @@ if [ $BUILD = "api" ]; then
   sed -i -- "35s/.*/				\"API\": \"{{user \`tag\`}}\"/g" $PACKER
 elif [ $BUILD = "web" ]; then
   sed -i -- "35s/.*/				\"Web\": \"{{user \`tag\`}}\"/g" $PACKER
+  # Get API ELB URL
+  API_ELB_URL=$(aws elb describe-load-balancers --load-balancer-names $ENV-api --query "LoadBalancerDescriptions[0].DNSName" | sed -e 's/"//g')
+  sed -i -- "13s/.*/    - \"api_url\": \"$API_ELB_URL\"/g" "./scripts/playbook.yml"
 fi
 
 # Build new AMI with Packer
