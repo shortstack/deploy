@@ -17,6 +17,7 @@ Configure AWS CLI tools:
 
 ```bash
 sudo pip install awscli
+aws configure
 ```
 ---
 
@@ -56,7 +57,7 @@ cp env/env-dev-deploy.template env/env-dev-deploy.list
 ./scripts/deploy-vpc.sh -e dev -c 19
 ```
 
-#### When the OpenVPN playbook completes, do the following to add an admin user to OpenVPN:
+#### When the script completes, do the following to add an admin user to OpenVPN:
 
 ```bash
 ssh -i key.pem ec2-user@{ openvpn-ip }
@@ -74,15 +75,24 @@ You will now also want to lock down the OpenVPN security group to allow SSH from
 
 ## deploy.sh
 
+#### Assumes you've already run deploy-vpc.sh successfully and have an environment stood up.
 #### In order to deploy locally, you must do the following:
 
 Configure AWS CLI tools:
 
 ```bash
 sudo pip install awscli
+aws configure
 ```
 
-Modify Dockerfile and build Docker images or add your own. Then push to ECS repositories.
+Create ECS repositories:
+
+```
+aws ecr create-repository --repository-name api
+aws ecr create-repository --repository-name web
+```
+
+Modify Dockerfiles and build Docker images or add your own. Then push to newly created ECS repositories.
 ```
 eval sudo $(aws ecr get-login --region us-east-1)
 

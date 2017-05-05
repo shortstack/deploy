@@ -5,8 +5,8 @@
   vars:
     - env: "dev"
     - region: us-east-1
-    - private_ip: "172.23.8.140"
-    - eip: "52.44.202.213"
+    - private_ip: "172.23.8.64"
+    - eip: "34.205.204.244"
     - cidr: "23"
     - vpn_password: "{{ lookup('env','VPN_PASSWORD') }}"
 
@@ -31,7 +31,18 @@
     become_method: sudo
 
   - name: Install google-authenticator
-    package: name=google-authenticator state=installed
+    ignore_errors: yes
+    yum:
+      name: google-authenticator
+      state: present
+    become: yes
+    become_method: sudo
+
+  - name: Install google-authenticator
+    ignore_errors: yes
+    yum:
+      name: google-authenticator
+      state: present
     become: yes
     become_method: sudo
 
