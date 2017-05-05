@@ -6,11 +6,11 @@
   vars:
     - "build": "web"
     - "env": "dev"
-    - "timestamp": "1494000845"
+    - "timestamp": ""
     - "port": "8080"
     - "tag": "latest"
-    - "aws_account": "762130055263"
-    - "api_url": "dev-api-1672697805.us-east-1.elb.amazonaws.com"
+    - "aws_account": ""
+    - "api_url": ""
     - "scheme": "internet-facing"
     - "ami_name": "{{ build }}-{{ timestamp }}"
     - region: us-east-1
