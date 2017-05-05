@@ -76,7 +76,7 @@ You will now also want to lock down the OpenVPN security group to allow SSH from
 ## deploy.sh
 
 #### Assumes you've already run deploy-vpc.sh successfully and have an environment stood up.
-#### In order to deploy locally, you must do the following:
+#### In order to deploy, you must do the following prior:
 
 Configure AWS CLI tools:
 
