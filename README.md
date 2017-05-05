@@ -128,7 +128,7 @@ Script requires 4 parameters:
 * Environment - dev, test, prod
 * Build - web, api
 * Location - linux, mac
-* Tag - GitHub commit tag
+* Tag - ECS repository tag
 
 ```bash
 cd deploy
