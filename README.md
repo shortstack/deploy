@@ -50,6 +50,8 @@ These are all tagged appropriately such that the API/web deploy script will pick
 
 OpenVPN playbook runs, which installs and configures OpenVPN with 2 factor authentication enabled, sets the password for the openvpn administrator user, and allows access to the subnets that were generated within the VPC. You will need to SSH in and set up an admin user when this is complete.
 
+Finally, a database playbook runs and spins up a PostgreSQL database with the user-specified size and password from the env file.
+
 ### Usage
 
 Modify env-dev-deploy.template file with your own information.
@@ -136,7 +138,7 @@ Once the AMI has been created, an Ansible playbook runs.
 * Adds the appropriate amount of new instances to the load balancer via the auto scaling group
 * Shuts down old instances once new instances are healthy
 
-Your web application will be available via the web load balancer URL. 
+Your web application will be available via the web load balancer URL.
 
 Your API will be available via the API load balancer URL assuming you deployed a database and an actual API.
 

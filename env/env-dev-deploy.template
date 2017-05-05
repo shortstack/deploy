@@ -3,3 +3,5 @@ export AWS_ACCESS_KEY_ID=
 export AWS_ACCOUNT=
 export VPN_PASSWORD=
 export DEV_PEM=
+export DB_SIZE=
+export DB_PASSWORD=
