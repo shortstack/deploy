@@ -2,7 +2,7 @@
 
 ## deploy-vpc.sh
 
-#### In order to deploy locally, you must do the following:
+#### In order to deploy, you must do the following:
 
 Install dependencies:
 
@@ -19,9 +19,16 @@ Configure AWS CLI tools:
 sudo pip install awscli
 aws configure
 ```
+
+Create SSH keys in AWS EC2:
+
+* dev-key
+* test-key
+* prod-key
+
 ---
 
-This script uses Ansible to deploy an AWS CloudFormation template. It builds a CloudFormation stack, which creates the following:
+This script uses Ansible to deploy an AWS CloudFormation template. It creates a CloudFormation stack, which creates the following:
 
 * VPC
 * Private subnets - 2x web, 2x API, 2x database
