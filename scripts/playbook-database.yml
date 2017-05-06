@@ -7,6 +7,7 @@
     - region: us-east-1
     - size: "{{ lookup('env','DB_SIZE') }}"
     - password: "{{ lookup('env','DB_PASSWORD') }}"
+    - zone: "{{ lookup('env','DB_ZONE') }}"
 
   tasks:
   - name: Create Postgres RDS in a VPC
@@ -18,11 +19,11 @@
       size: "{{ size }}"
       instance_type: "db.t2.micro"
       db_engine: "postgres"
-      subnet: "dev-vpc-rdsprivatedatabasesubnetgroup-tkwd2krcxi1i"
-      multi_zone: "no"
+      subnet: "dev-vpc-rdsprivatedatabasesubnetgroup-z7hdjotf9tan"
+      multi_zone: "{{ zone }}"
       port: 5432
       db_name: "{{ env }}"
       username: "dbadmin"
       password: "{{ password }}"
-      vpc_security_groups: "sg-ebfb5c95"
+      vpc_security_groups: "sg-bbb512c5"
     register: database_facts
