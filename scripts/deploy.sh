@@ -61,14 +61,7 @@ source ./env/env-$ENV-deploy.list
 
 # Determine keypair
 KEY="./scripts/$ENV-key.pem"
-
-if [ $ENV = "dev" ]; then
-  echo -e "${DEV_PEM}" > $KEY
-elif [ $ENV = "test" ]; then
-  echo -e "${TEST_PEM}" > $KEY
-elif [ $ENV = "prod" ]; then
-  echo -e "${PROD_PEM}" > $KEY
-fi
+echo -e "${PEM}" > $KEY
 
 # Fix key permissions
 chmod 600 $KEY

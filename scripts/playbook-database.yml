@@ -19,11 +19,11 @@
       size: "{{ size }}"
       instance_type: "db.t2.micro"
       db_engine: "postgres"
-      subnet: "dev-vpc-rdsprivatedatabasesubnetgroup-z7hdjotf9tan"
+      subnet: "dev-vpc-rdsprivatedatabasesubnetgroup-mi3q5fhjzbke"
       multi_zone: "{{ zone }}"
       port: 5432
       db_name: "{{ env }}"
       username: "dbadmin"
       password: "{{ password }}"
-      vpc_security_groups: "sg-bbb512c5"
+      vpc_security_groups: "sg-1f21ac61"
     register: database_facts
